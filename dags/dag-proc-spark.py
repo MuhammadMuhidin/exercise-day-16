@@ -4,7 +4,7 @@ from airflow import models
 from airflow.contrib.operators import dataproc_operator
 from airflow.utils import trigger_rule
 
-
+# Set up variables for the DAG
 MAIN_CLASS= 'org.apache.spark.examples.JavaWordCount'
 FILE_JAR=[models.Variable.get('gcp_bucket') + '/spark-examples_2.12-3.4.1.jar']
 ARGUMENTS=[models.Variable.get('gcp_bucket') + '/input.txt']
@@ -23,6 +23,7 @@ with models.DAG(
         default_args=default_dag_args
 ) as dag:
 
+    # Create Dataproc Cluster
     create_dataproc_cluster = dataproc_operator.DataprocClusterCreateOperator(
         task_id='create_dataproc_cluster',
         cluster_name='temp-spark-cluster-{{ ds_nodash }}',
@@ -35,6 +36,7 @@ with models.DAG(
         master_disk_size=50,
         worker_disk_size=50)
 
+    # Run Spark Job
     run_dataproc_spark = dataproc_operator.DataProcSparkOperator(
         task_id='run_dataproc_spark',
         region=models.Variable.get('gce_region'),
@@ -43,6 +45,7 @@ with models.DAG(
         cluster_name='temp-spark-cluster-{{ ds_nodash }}',
         arguments=ARGUMENTS)
 
+    # Delete Dataproc Cluster
     delete_dataproc_cluster = dataproc_operator.DataprocClusterDeleteOperator(
         task_id='delete_dataproc_cluster',
         region=models.Variable.get('gce_region'),
