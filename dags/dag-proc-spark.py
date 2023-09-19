@@ -49,6 +49,7 @@ with models.DAG(
         task_id='delete_dataproc_cluster',
         region=models.Variable.get('gce_region'),
         cluster_name='temp-spark-cluster-{{ ds_nodash }}',
+        # If trigger_rule all done, delete cluster and you can go home :)
         trigger_rule=trigger_rule.TriggerRule.ALL_DONE)
 
     create_dataproc_cluster >> run_dataproc_spark >> delete_dataproc_cluster
